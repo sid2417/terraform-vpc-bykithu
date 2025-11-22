@@ -47,7 +47,7 @@ resource "aws_subnet" "private_subnets" {
         var.private_subnet_tags,
         {
             Name = "${local.resource_name}-private-${local.availability_zones[count.index]}"
-        }   ## morrisons-dev-public-zone_name
+        }   ## morrisons-dev-private-zone_name
         )
 }
 
@@ -62,7 +62,21 @@ resource "aws_subnet" "database_subnets" {
         var.database_subnet_tags,
         {
             Name = "${local.resource_name}-database-${local.availability_zones[count.index]}"
-        }   ## morrisons-dev-public-zone_name
+        }   ## morrisons-dev-database-zone_name
+        )
+}
+
+
+#### database subnets group rule ####
+resource "aws_db_subnet_group" "default" {
+  name       = "${local.resource_name}"
+  subnet_ids = aws_subnet.database_subnets[*].id
+
+  tags = merge(var.common_tags,
+        var.database_subnet_group_tags,
+        {
+            Name = "${local.resource_name}"
+        }   ## morrisons-dev
         )
 }
 
@@ -129,21 +143,21 @@ resource "aws_route_table" "database_route_table" {
 resource "aws_route" "public_route" {
   route_table_id            = aws_route_table.public_route_table.id
   destination_cidr_block    = "0.0.0.0/0"
-  gateway_id = aws_internet_gateway.gw.id
+  gateway_id = aws_internet_gateway.gw.id  ## for public it is gateway_id
 }
 
 #### private routes ####
 resource "aws_route" "private_route_nat" {
   route_table_id            = aws_route_table.private_route_table.id
   destination_cidr_block    = "0.0.0.0/0"
-  gateway_id = aws_nat_gateway.nat.id
+  nat_gateway_id = aws_nat_gateway.nat.id   ## for private it is nat_gateway_id
 }
 
 #### database routes ####
 resource "aws_route" "database_route_nat" {
   route_table_id            = aws_route_table.database_route_table.id
   destination_cidr_block    = "0.0.0.0/0"
-  gateway_id = aws_nat_gateway.nat.id
+  nat_gateway_id = aws_nat_gateway.nat.id  ## for private it is nat_gateway_id
 }
 
 

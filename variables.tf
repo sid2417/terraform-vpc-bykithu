@@ -87,6 +87,13 @@ variable "database_subnet_tags" {
   
 }
 
+#### database subnet group rule ####
+variable "database_subnet_group_tags" {
+    type = map(string)
+    default = {}
+  
+}
+
 
 #### NAT gate way tags ####
 variable "natgw_tags" {
